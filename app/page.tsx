@@ -1,34 +1,15 @@
 // app/page.tsx
-import { useEffect, useState } from 'react';
+'use client';
 
-type ProfileData = {
-  imageUrl: string;
-  name: string;
-  followers: number;
-  playlists: number;
-};
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-const ProfilePage = () => {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+export default function Home() {
+  const router = useRouter();
 
   useEffect(() => {
-    // Call backend to fetch profile data
-    fetch('/api/profile')
-      .then((response) => response.json())
-      .then((data) => setProfile(data))
-      .catch((error) => console.error('Error fetching profile:', error));
-  }, []);
+    router.push('/login'); // Redirect to login page on load
+  }, [router]);
 
-  if (!profile) return <div>Loading...</div>;
-
-  return (
-    <div className="flex flex-col items-center">
-      <img src={profile.imageUrl} alt="Profile" className="rounded-full w-32 h-32 mb-4" />
-      <h1 className="text-2xl font-bold">{profile.name}</h1>
-      <p>{profile.followers} Followers</p>
-      <p>{profile.playlists} Playlists</p>
-    </div>
-  );
-};
-
-export default ProfilePage;
+  return null; // Nothing to render as it redirects immediately
+}
