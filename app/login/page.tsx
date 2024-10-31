@@ -5,7 +5,7 @@ import { useState } from 'react';
 export default function Login() {
   const handleLogin = () => {
     // Redirect to backend endpoint to initiate Spotify OAuth
-    window.location.href = 'https://your-backend-url.com/auth/login';
+    window.location.href = 'https://spotify-backend-sigma.vercel.app/auth/login';
   };
 
   return (
