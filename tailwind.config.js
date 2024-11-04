@@ -1,9 +1,14 @@
+// client/tailwind.config.js
 module.exports = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx}',
+    "./src/**/*.{js,jsx,ts,tsx}", // Adjust this path if your components are elsewhere
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
-};
+}
