@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
 
 function ArtistDetail({ token }) {
@@ -76,14 +76,15 @@ function ArtistDetail({ token }) {
               <p className="font-black text-xs text-[#9b9b9b]">POPULARITY</p>
             </div>
           </div>
-          {/* <a
-            href={`https://open.spotify.com/artist/${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-4 px-3 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
+
+          {/* Get Recommendations Button */}
+          <Link
+            to={`/artrec/${id}`}
+            state={{ artistName: artist.name }} // Pass the artist name in state
+            className="mt-4 inline-block px-4 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
           >
-            VIEW ARTIST ON SPOTIFY
-          </a> */}
+            Get Recommendations
+          </Link>
         </>
       )}
     </div>
