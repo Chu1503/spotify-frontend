@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 import { Bar } from "react-chartjs-2";
@@ -204,19 +204,26 @@ const SongDetail = ({ token }) => {
             {song.album.name} •{" "}
             {new Date(song.album.release_date).getFullYear()}
           </p>
-          <a
+          {/* <a
             href={song.external_urls.spotify}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block mt-4 px-3 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
           >
             PLAY ON SPOTIFY
-          </a>
+          </a> */}
+          <Link
+            to={`/songrec/${songId}`}
+            state={{ trackName: song.name }} // Pass the song name in state
+            className="inline-block mt-4 px-4 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
+          >
+            Get Recommendations
+          </Link>
         </div>
       </div>
 
       {/* Feature Table */}
-      <div className="grid grid-cols-5 text-center text-sm border border-[#363636] text-[#b3b3b3]">
+      <div className="grid grid-cols-5 text-center text-sm border border-[#363636] text-[#b3b3b3] mt-8">
         <div className="border border-[#363636] p-4">
           <span className="font-black text-xl">
             {Math.floor(song.duration_ms / 60000)}:
@@ -261,22 +268,30 @@ const SongDetail = ({ token }) => {
           <span className="text-xs">Popularity</span>
         </div>
         <div className="border border-[#363636] p-4">
-          <span className="font-black text-xl">{audioAnalysis.bars.length}</span>
+          <span className="font-black text-xl">
+            {audioAnalysis.bars.length}
+          </span>
           <br />
           <span className="text-xs">Bars</span>
         </div>
         <div className="border border-[#363636] p-4">
-          <span className="font-black text-xl">{audioAnalysis.beats.length}</span>
+          <span className="font-black text-xl">
+            {audioAnalysis.beats.length}
+          </span>
           <br />
           <span className="text-xs">Beats</span>
         </div>
         <div className="border border-[#363636] p-4">
-          <span className="font-black text-xl">{audioAnalysis.sections.length}</span>
+          <span className="font-black text-xl">
+            {audioAnalysis.sections.length}
+          </span>
           <br />
           <span className="text-xs">Sections</span>
         </div>
         <div className="border border-[#363636] p-4">
-          <span className="font-black text-xl">{audioAnalysis.segments.length}</span>
+          <span className="font-black text-xl">
+            {audioAnalysis.segments.length}
+          </span>
           <br />
           <span className="text-xs">Segments</span>
         </div>
