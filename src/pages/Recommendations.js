@@ -130,7 +130,7 @@ function Recommendations({ token }) {
 
             {/* Display song search results */}
             {songResults.length > 0 && (
-              <ul className="bg-[#282828] rounded-md p-2 max-h-80 overflow-y-auto no-scrollbar w-full">
+              <ul className="bg-[#282828] rounded-md p-2 max-h-100 overflow-y-auto no-scrollbar w-full">
                 {songResults.map((track) => (
                   <li
                     key={track.id}
@@ -172,7 +172,7 @@ function Recommendations({ token }) {
 
             {/* Display artist search results */}
             {artistResults.length > 0 && (
-              <ul className="bg-[#282828] rounded-md p-2 max-h-80 overflow-y-auto no-scrollbar w-full">
+              <ul className="bg-[#282828] rounded-md p-2 max-h-100 overflow-y-auto no-scrollbar w-full">
                 {artistResults.map((artist) => (
                   <li
                     key={artist.id}
