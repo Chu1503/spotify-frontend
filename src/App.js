@@ -28,14 +28,14 @@ function App() {
   const [playlistsCount, setPlaylistsCount] = useState(0);
 
   // Function to handle logout
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setToken("");
     setUser(null);
     setPlaylistsCount(0);
     window.localStorage.removeItem("access_token");
     window.localStorage.removeItem("refresh_token");
     console.log("User logged out.");
-  };
+  }, []);
 
   // Function to refresh access token
   const refreshAccessToken = useCallback(async () => {
@@ -66,7 +66,7 @@ function App() {
       console.error("Error refreshing access token:", error);
       handleLogout();
     }
-  }, []);
+  }, [handleLogout]);
 
   // Effect to retrieve token from URL or localStorage
   useEffect(() => {
@@ -75,13 +75,14 @@ function App() {
 
     if (!storedToken && hash) {
       const params = new URLSearchParams(hash.substring(1));
-      storedToken = params.get("access_token");
+      const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
       window.location.hash = ""; // Clear the hash
 
-      if (storedToken && refreshToken) {
-        window.localStorage.setItem("access_token", storedToken);
+      if (accessToken && refreshToken) {
+        window.localStorage.setItem("access_token", accessToken);
         window.localStorage.setItem("refresh_token", refreshToken);
+        storedToken = accessToken;
         console.log("Access and refresh tokens stored.");
       } else {
         console.error("Tokens not found in URL.");
@@ -96,13 +97,11 @@ function App() {
   useEffect(() => {
     if (!token) return;
 
-    // const fetchUserData = async () => {
-    async function fetchUserData(token) {
+    async function fetchUserData() {
       try {
         console.log("Fetching user profile...");
         // Fetch User Profile
         const profileResponse = await fetch("https://api.spotify.com/v1/me", {
-          // headers: { Authorization: `Bearer ${token}` },
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -124,13 +123,17 @@ function App() {
           } else {
             handleLogout();
           }
+          return; // Exit the function if profile fetch failed
         }
 
         // Fetch User Playlists
         console.log("Fetching user playlists...");
         const playlistResponse = await fetch(
           "https://api.spotify.com/v1/me/playlists",
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
         if (playlistResponse.ok) {
@@ -157,7 +160,7 @@ function App() {
     }
 
     fetchUserData();
-  }, [token, refreshAccessToken]);
+  }, [token, refreshAccessToken, handleLogout]);
 
   // Effect to set up token refresh interval
   useEffect(() => {
@@ -176,7 +179,6 @@ function App() {
       <div className="min-h-screen bg-[#181818] flex items-center justify-center p-4">
         <a
           href="https://spotify-backend-omega.vercel.app/login"
-          // href="http://localhost:5000/login"
           className="px-6 py-3 bg-[#1ed760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300"
         >
           LOGIN WITH SPOTIFY
@@ -209,14 +211,8 @@ function App() {
               path="/playlist/:id"
               element={<PlaylistDetail token={token} />}
             />
-            <Route
-              path="/song/:songId"
-              element={<SongDetail token={token} />}
-            />
-            <Route
-              path="/artist/:id"
-              element={<ArtistDetail token={token} />}
-            />
+            <Route path="/song/:songId" element={<SongDetail token={token} />} />
+            <Route path="/artist/:id" element={<ArtistDetail token={token} />} />
             <Route path="/playrec/:id" element={<PlayRec token={token} />} />
             <Route
               path="/songrec/:trackId"
