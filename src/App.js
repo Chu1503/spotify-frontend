@@ -77,7 +77,7 @@ function App() {
     return (
       <div className="min-h-screen bg-[#181818] flex items-center justify-center p-4">
         <a
-          href="http://localhost:5000/login"
+          href="https://spotify-backend-omega.vercel.app/login"
           className="px-6 py-3 bg-[#1ed760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300"
         >
           LOGIN WITH SPOTIFY
