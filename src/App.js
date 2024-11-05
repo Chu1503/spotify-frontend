@@ -1,5 +1,5 @@
 // App.js
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -20,161 +20,40 @@ import SongDetail from "./pages/SongDetail";
 import ArtistDetail from "./pages/ArtistDetail";
 import PlayRec from "./pages/PlayRec";
 import SongRec from "./pages/SongRec";
-import ArtRec from "./pages/ArtRec"; // Import the new ArtRec component
+import ArtRec from "./pages/ArtRec";
 
 function App() {
-  const [token, setToken] = useState("");
   const [user, setUser] = useState(null);
   const [playlistsCount, setPlaylistsCount] = useState(0);
 
-  // Function to handle logout
-  const handleLogout = useCallback(() => {
-    setToken("");
-    setUser(null);
-    setPlaylistsCount(0);
-    window.localStorage.removeItem("access_token");
-    window.localStorage.removeItem("refresh_token");
-    console.log("User logged out.");
-  }, []);
-
-  // Function to refresh access token
-  const refreshAccessToken = useCallback(async () => {
-    const refreshToken = window.localStorage.getItem("refresh_token");
-    if (!refreshToken) {
-      console.log("No refresh token available. Logging out.");
-      handleLogout();
-      return;
-    }
-
-    try {
-      console.log("Refreshing access token...");
-      const response = await fetch(
-        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        const newAccessToken = data.access_token;
-        window.localStorage.setItem("access_token", newAccessToken);
-        setToken(newAccessToken);
-        console.log("Access token refreshed successfully.");
-      } else {
-        console.error("Failed to refresh access token:", data);
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Error refreshing access token:", error);
-      handleLogout();
-    }
-  }, [handleLogout]);
-
-  // Effect to retrieve token from URL or localStorage
+  // Fetch user profile and playlists data
   useEffect(() => {
-    const hash = window.location.hash;
-    let storedToken = window.localStorage.getItem("access_token");
-
-    if (!storedToken && hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get("access_token");
-      const refreshToken = params.get("refresh_token");
-      window.location.hash = ""; // Clear the hash
-
-      if (accessToken && refreshToken) {
-        window.localStorage.setItem("access_token", accessToken);
-        window.localStorage.setItem("refresh_token", refreshToken);
-        storedToken = accessToken;
-        console.log("Access and refresh tokens stored.");
-      } else {
-        console.error("Tokens not found in URL.");
-      }
-    }
-
-    setToken(storedToken);
-    console.log("Current Access Token:", storedToken);
-  }, []);
-
-  // Effect to fetch user data and playlists
-  useEffect(() => {
-    if (!token) return;
-
     async function fetchUserData() {
       try {
         console.log("Fetching user profile...");
-        // Fetch User Profile
-        const profileResponse = await fetch("https://api.spotify.com/v1/me", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (profileResponse.ok) {
-          const profileData = await profileResponse.json();
-          setUser(profileData);
-          console.log("User Profile Data:", profileData);
-        } else {
-          const errorData = await profileResponse.json();
-          console.error(
-            "Profile Fetch Error:",
-            profileResponse.status,
-            errorData
-          );
-          if (profileResponse.status === 401) {
-            console.log("Access token expired. Refreshing token...");
-            await refreshAccessToken();
-          } else {
-            handleLogout();
-          }
-          return; // Exit the function if profile fetch failed
-        }
-
-        // Fetch User Playlists
-        console.log("Fetching user playlists...");
-        const playlistResponse = await fetch(
-          "https://api.spotify.com/v1/me/playlists",
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const profileResponse = await fetch(
+          "https://spotify-backend-omega.vercel.app/api/me"
         );
+        const profileData = await profileResponse.json();
+        setUser(profileData);
+        console.log("User Profile Data:", profileData);
 
-        if (playlistResponse.ok) {
-          const playlistData = await playlistResponse.json();
-          setPlaylistsCount(playlistData.total);
-          console.log("Playlists Data:", playlistData);
-        } else {
-          const errorData = await playlistResponse.json();
-          console.error(
-            "Playlist Fetch Error:",
-            playlistResponse.status,
-            errorData
-          );
-          if (playlistResponse.status === 401) {
-            console.log("Access token expired. Refreshing token...");
-            await refreshAccessToken();
-          } else {
-            handleLogout();
-          }
-        }
+        console.log("Fetching user playlists...");
+        const playlistsResponse = await fetch(
+          "https://spotify-backend-omega.vercel.app/api/me/playlists"
+        );
+        const playlistsData = await playlistsResponse.json();
+        setPlaylistsCount(playlistsData.total);
+        console.log("Playlists Data:", playlistsData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching user data:", error);
       }
     }
 
     fetchUserData();
-  }, [token, refreshAccessToken, handleLogout]);
+  }, []);
 
-  // Effect to set up token refresh interval
-  useEffect(() => {
-    if (!token) return;
-
-    // Spotify access tokens typically expire in 3600 seconds (1 hour)
-    const refreshInterval = setInterval(() => {
-      refreshAccessToken();
-    }, 1000 * 60 * 45); // Refresh every 45 minutes
-
-    return () => clearInterval(refreshInterval);
-  }, [token, refreshAccessToken]);
-
-  if (!token) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#181818] flex items-center justify-center p-4">
         <a
@@ -190,7 +69,7 @@ function App() {
   return (
     <Router>
       <div className="flex min-h-screen bg-[#181818]">
-        <Sidebar user={user} handleLogout={handleLogout} />
+        <Sidebar user={user} handleLogout={() => setUser(null)} />
 
         <main className="flex-1 p-6 overflow-auto">
           <Routes>
@@ -199,30 +78,17 @@ function App() {
               path="/profile"
               element={<Profile user={user} playlistsCount={playlistsCount} />}
             />
-            <Route path="/top-artists" element={<TopArtists token={token} />} />
-            <Route path="/top-tracks" element={<TopTracks token={token} />} />
-            <Route path="/recent" element={<Recent token={token} />} />
-            <Route path="/playlists" element={<Playlists token={token} />} />
-            <Route
-              path="/recommendations"
-              element={<Recommendations token={token} />}
-            />
-            <Route
-              path="/playlist/:id"
-              element={<PlaylistDetail token={token} />}
-            />
-            <Route path="/song/:songId" element={<SongDetail token={token} />} />
-            <Route path="/artist/:id" element={<ArtistDetail token={token} />} />
-            <Route path="/playrec/:id" element={<PlayRec token={token} />} />
-            <Route
-              path="/songrec/:trackId"
-              element={<SongRec token={token} />}
-            />
-            <Route
-              path="/artrec/:artistId"
-              element={<ArtRec token={token} />}
-            />{" "}
-            {/* New Route for ArtRec */}
+            <Route path="/top-artists" element={<TopArtists />} />
+            <Route path="/top-tracks" element={<TopTracks />} />
+            <Route path="/recent" element={<Recent />} />
+            <Route path="/playlists" element={<Playlists />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/playlist/:id" element={<PlaylistDetail />} />
+            <Route path="/song/:songId" element={<SongDetail />} />
+            <Route path="/artist/:id" element={<ArtistDetail />} />
+            <Route path="/playrec/:id" element={<PlayRec />} />
+            <Route path="/songrec/:trackId" element={<SongRec />} />
+            <Route path="/artrec/:artistId" element={<ArtRec />} />
             <Route path="*" element={<Navigate to="/profile" replace />} />
           </Routes>
         </main>
