@@ -7,10 +7,16 @@ import ClipLoader from "react-spinners/ClipLoader";
 function ArtRec({ token }) {
   const { artistId } = useParams(); // artist ID
   const location = useLocation();
-  const [artistName, setArtistName] = useState(location.state?.artistName || ""); // Artist name from location state
+  const artistName = location.state?.artistName || ""; // Directly retrieve artist name from location state
+
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [customPlaylistName, setCustomPlaylistName] = useState(""); // State for custom playlist name
+  const [saving, setSaving] = useState(false); // State to manage save button loading
+  const [showModal, setShowModal] = useState(false); // Modal visibility state
+  const [isPublic, setIsPublic] = useState(true); // State for playlist visibility
+  const [showConfirmation, setShowConfirmation] = useState(false); // Show confirmation message
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -34,6 +40,68 @@ function ArtRec({ token }) {
     fetchRecommendations(); // Fetch recommendations based on the artist
   }, [artistId, token]);
 
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const saveToSpotify = async () => {
+    if (recommendations.length === 0 || !customPlaylistName.trim()) {
+      alert("Please enter a name for the playlist.");
+      return;
+    }
+
+    setSaving(true); // Start save loading
+    try {
+      // Step 1: Create a new playlist
+      const userResponse = await axios.get("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userId = userResponse.data.id;
+      const newPlaylistResponse = await axios.post(
+        `https://api.spotify.com/v1/users/${userId}/playlists`,
+        {
+          name: customPlaylistName,
+          description: `A playlist of recommendations based on the artist "${artistName}".`,
+          public: isPublic,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const newPlaylistId = newPlaylistResponse.data.id;
+
+      // Step 2: Add recommended tracks to the new playlist
+      const trackUris = recommendations.map((track) => track.uri);
+      await axios.post(
+        `https://api.spotify.com/v1/playlists/${newPlaylistId}/tracks`,
+        {
+          uris: trackUris,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Show confirmation message and close modal
+      setShowConfirmation(true);
+      setTimeout(() => setShowConfirmation(false), 3000); // Hide after 3 seconds
+      setShowModal(false);
+    } catch (err) {
+      console.error("Error saving playlist to Spotify:", err);
+      alert("Failed to save playlist. Please try again.");
+    } finally {
+      setSaving(false); // End save loading
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -52,13 +120,73 @@ function ArtRec({ token }) {
         <h2 className="text-2xl font-bold text-white">
           Recommended Tracks based on <span className="text-[#1ED760]">{artistName}</span>
         </h2>
+        <button
+          onClick={openModal}
+          disabled={saving}
+          className={`px-4 py-2 bg-[#1ED760] text-xs mr-24 text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300 ${
+            saving ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          {saving ? "Saving..." : "Save to Spotify"}
+        </button>
       </div>
+
+      {/* Confirmation message */}
+      {showConfirmation && (
+        <div className="text-center bg-[#1ED760] text-[#040306] p-2 rounded mb-4">
+          Playlist saved to your Spotify account!
+        </div>
+      )}
 
       <ul>
         {recommendations.map((track, index) => (
           <SongItem key={track.id} track={track} index={index} />
         ))}
       </ul>
+
+      {/* Modal for playlist name and privacy selection */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#282828] p-6 rounded-lg w-[80%] max-w-md text-white relative">
+            <button onClick={() => setShowModal(false)} className="absolute top-2 right-2 text-2xl">
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-4">Save Playlist to Spotify</h2>
+            <input
+              type="text"
+              placeholder="Enter Playlist Name"
+              value={customPlaylistName}
+              onChange={(e) => setCustomPlaylistName(e.target.value)}
+              className="w-full p-2 rounded-md border border-gray-300 text-white mb-4 bg-[#040306]"
+            />
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <button
+                onClick={() => setIsPublic(true)}
+                className={`px-4 py-2 rounded-md font-bold transition-colors ${
+                  isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
+                }`}
+              >
+                Public
+              </button>
+              <button
+                onClick={() => setIsPublic(false)}
+                className={`px-4 py-2 rounded-md font-bold transition-colors ${
+                  !isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
+                }`}
+              >
+                Private
+              </button>
+            </div>
+            <button
+              onClick={saveToSpotify}
+              disabled={saving}
+              className="px-4 py-2 bg-[#1ED760] text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300 w-full"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
