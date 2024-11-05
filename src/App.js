@@ -50,7 +50,6 @@ function App() {
       console.log("Refreshing access token...");
       const response = await fetch(
         `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
-        // `http://localhost:5000/refresh_token?refresh_token=${refreshToken}`
       );
       const data = await response.json();
 
@@ -97,11 +96,14 @@ function App() {
   useEffect(() => {
     if (!token) return;
 
-    const fetchUserData = async () => {
+    // const fetchUserData = async () => {
+    async function fetchUserData(token) {
       try {
         console.log("Fetching user profile...");
         // Fetch User Profile
         const profileResponse = await fetch("https://api.spotify.com/v1/me", {
+          // headers: { Authorization: `Bearer ${token}` },
+          method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -152,7 +154,7 @@ function App() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    };
+    }
 
     fetchUserData();
   }, [token, refreshAccessToken]);
@@ -216,8 +218,15 @@ function App() {
               element={<ArtistDetail token={token} />}
             />
             <Route path="/playrec/:id" element={<PlayRec token={token} />} />
-            <Route path="/songrec/:trackId" element={<SongRec token={token} />} />
-            <Route path="/artrec/:artistId" element={<ArtRec token={token} />} /> {/* New Route for ArtRec */}
+            <Route
+              path="/songrec/:trackId"
+              element={<SongRec token={token} />}
+            />
+            <Route
+              path="/artrec/:artistId"
+              element={<ArtRec token={token} />}
+            />{" "}
+            {/* New Route for ArtRec */}
             <Route path="*" element={<Navigate to="/profile" replace />} />
           </Routes>
         </main>
