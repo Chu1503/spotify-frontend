@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -40,6 +40,32 @@ function App() {
     setToken(token);
   }, []);
 
+  const refreshAccessToken = useCallback(async () => {
+    const refreshToken = window.localStorage.getItem("refresh_token");
+    if (!refreshToken) {
+      handleLogout();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        const newAccessToken = data.access_token;
+        window.localStorage.setItem("access_token", newAccessToken);
+        setToken(newAccessToken);
+      } else {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error("Error refreshing access token:", error);
+      handleLogout();
+    }
+  }, []); // Empty dependency array to memoize and avoid re-creation
+
   useEffect(() => {
     if (!token) return;
 
@@ -75,33 +101,7 @@ function App() {
     };
 
     fetchUserData();
-  }, [token]);
-
-  const refreshAccessToken = async () => {
-    const refreshToken = window.localStorage.getItem("refresh_token");
-    if (!refreshToken) {
-      handleLogout();
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        const newAccessToken = data.access_token;
-        window.localStorage.setItem("access_token", newAccessToken);
-        setToken(newAccessToken);
-      } else {
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Error refreshing access token:", error);
-      handleLogout();
-    }
-  };
+  }, [token, refreshAccessToken]);
 
   const handleLogout = () => {
     setToken("");
