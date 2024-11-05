@@ -19,6 +19,8 @@ import PlaylistDetail from "./pages/PlaylistDetail";
 import SongDetail from "./pages/SongDetail";
 import ArtistDetail from "./pages/ArtistDetail";
 import PlayRec from "./pages/PlayRec";
+import SongRec from "./pages/SongRec";
+import ArtRec from "./pages/ArtRec"; // Import the new ArtRec component
 
 function App() {
   const [token, setToken] = useState("");
@@ -47,7 +49,8 @@ function App() {
     try {
       console.log("Refreshing access token...");
       const response = await fetch(
-        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
+        // `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
+        `http://localhost:5000/refresh_token?refresh_token=${refreshToken}`
       );
       const data = await response.json();
 
@@ -170,7 +173,8 @@ function App() {
     return (
       <div className="min-h-screen bg-[#181818] flex items-center justify-center p-4">
         <a
-          href="https://spotify-backend-omega.vercel.app/login" // Ensure this matches your backend login route
+          // href="https://spotify-backend-omega.vercel.app/login"
+          href="http://localhost:5000/login"
           className="px-6 py-3 bg-[#1ed760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300"
         >
           LOGIN WITH SPOTIFY
@@ -212,6 +216,8 @@ function App() {
               element={<ArtistDetail token={token} />}
             />
             <Route path="/playrec/:id" element={<PlayRec token={token} />} />
+            <Route path="/songrec/:trackId" element={<SongRec token={token} />} />
+            <Route path="/artrec/:artistId" element={<ArtRec token={token} />} /> {/* New Route for ArtRec */}
             <Route path="*" element={<Navigate to="/profile" replace />} />
           </Routes>
         </main>
