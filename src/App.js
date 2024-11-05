@@ -25,7 +25,6 @@ function App() {
   const [playlistsCount, setPlaylistsCount] = useState(0);
 
   useEffect(() => {
-    // Retrieve token from URL hash or localStorage
     const hash = window.location.hash;
     let token = window.localStorage.getItem("access_token");
 
@@ -33,7 +32,6 @@ function App() {
       const params = new URLSearchParams(hash.substring(1));
       token = params.get("access_token");
       const refreshToken = params.get("refresh_token");
-
       window.location.hash = ""; // Clear the hash
       window.localStorage.setItem("access_token", token);
       window.localStorage.setItem("refresh_token", refreshToken);
@@ -43,49 +41,67 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (token) {
-      const fetchUserData = async () => {
-        try {
-          // Use fetch to get profile data
-          const profileResponse = await fetch("https://api.spotify.com/v1/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+    if (!token) return;
+
+    const fetchUserData = async () => {
+      try {
+        const profileResponse = await fetch("https://api.spotify.com/v1/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (profileResponse.ok) {
           const profileData = await profileResponse.json();
-
-          if (profileResponse.ok) {
-            setUser(profileData);
-          } else {
-            console.error("Profile request error:", profileData);
-            if (profileResponse.status === 403) handleLogout(); // Handle 403 error
-          }
-
-          // Use fetch to get playlists data
-          const playlistResponse = await fetch(
-            "https://api.spotify.com/v1/me/playlists",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const playlistData = await playlistResponse.json();
-
-          if (playlistResponse.ok) {
-            setPlaylistsCount(playlistData.total);
-          } else {
-            console.error("Playlists request error:", playlistData);
-            if (playlistResponse.status === 403) handleLogout(); // Handle 403 error
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
+          setUser(profileData);
+        } else if (profileResponse.status === 401) {
+          await refreshAccessToken();
+        } else {
+          handleLogout();
         }
-      };
 
-      fetchUserData();
-    }
+        const playlistResponse = await fetch(
+          "https://api.spotify.com/v1/me/playlists",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (playlistResponse.ok) {
+          const playlistData = await playlistResponse.json();
+          setPlaylistsCount(playlistData.total);
+        } else if (playlistResponse.status === 401) {
+          await refreshAccessToken();
+        } else {
+          handleLogout();
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserData();
   }, [token]);
+
+  const refreshAccessToken = async () => {
+    const refreshToken = window.localStorage.getItem("refresh_token");
+    if (!refreshToken) {
+      handleLogout();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        const newAccessToken = data.access_token;
+        window.localStorage.setItem("access_token", newAccessToken);
+        setToken(newAccessToken);
+      } else {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error("Error refreshing access token:", error);
+      handleLogout();
+    }
+  };
 
   const handleLogout = () => {
     setToken("");
