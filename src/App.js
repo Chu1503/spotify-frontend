@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,6 +25,7 @@ function App() {
   const [playlistsCount, setPlaylistsCount] = useState(0);
 
   useEffect(() => {
+    // Retrieve token from URL hash or localStorage
     const hash = window.location.hash;
     let token = window.localStorage.getItem("access_token");
 
@@ -44,32 +44,46 @@ function App() {
 
   useEffect(() => {
     if (token) {
-      axios
-        .get("https://api.spotify.com/v1/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setUser(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching user data:", error);
-          handleLogout(); // Logout if token is invalid
-        });
+      const fetchUserData = async () => {
+        try {
+          // Use fetch to get profile data
+          const profileResponse = await fetch("https://api.spotify.com/v1/me", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const profileData = await profileResponse.json();
 
-      axios
-        .get("https://api.spotify.com/v1/me/playlists", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setPlaylistsCount(response.data.total);
-        })
-        .catch((error) => {
-          console.error("Error fetching playlists:", error);
-        });
+          if (profileResponse.ok) {
+            setUser(profileData);
+          } else {
+            console.error("Profile request error:", profileData);
+            if (profileResponse.status === 403) handleLogout(); // Handle 403 error
+          }
+
+          // Use fetch to get playlists data
+          const playlistResponse = await fetch(
+            "https://api.spotify.com/v1/me/playlists",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const playlistData = await playlistResponse.json();
+
+          if (playlistResponse.ok) {
+            setPlaylistsCount(playlistData.total);
+          } else {
+            console.error("Playlists request error:", playlistData);
+            if (playlistResponse.status === 403) handleLogout(); // Handle 403 error
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      fetchUserData();
     }
   }, [token]);
 
