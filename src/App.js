@@ -14,7 +14,7 @@ import Recommendations from "./pages/Recommendations";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import SongDetail from "./pages/SongDetail";
 import ArtistDetail from "./pages/ArtistDetail";
-import PlayRec from "./pages/PlayRec"; // Import the PlayRec component
+import PlayRec from "./pages/PlayRec";
 
 function App() {
   const [token, setToken] = useState("");
