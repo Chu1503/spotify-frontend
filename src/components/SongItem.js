@@ -32,7 +32,6 @@ const SongItem = ({ track, index }) => {
           </div>
         ) : (
           <div className="w-10 h-10 bg-gray-400 mr-4 flex items-center justify-center text-gray-700">
-            No Image
           </div>
         )}
 

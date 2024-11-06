@@ -23,7 +23,6 @@ function Profile({ user, playlistsCount }) {
           />
         ) : (
           <div className="w-24 h-24 rounded-full bg-gray-300 mb-4 flex items-center justify-center text-gray-700">
-            No Image
           </div>
         )}
 

@@ -4,7 +4,7 @@ import axios from "axios";
 import SongItem from "../components/SongItem";
 import ClipLoader from "react-spinners/ClipLoader";
 import { Bar } from "react-chartjs-2";
-import { FaTrashAlt } from "react-icons/fa"; // Import delete icon
+import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,14 @@ import {
   Legend,
 } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function PlaylistDetail({ token }) {
   const { id } = useParams();
@@ -24,6 +31,9 @@ function PlaylistDetail({ token }) {
   const [audioFeatures, setAudioFeatures] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchPlaylist = async () => {
@@ -37,6 +47,7 @@ function PlaylistDetail({ token }) {
           }
         );
         setPlaylist(response.data);
+        setNewPlaylistName(response.data.name); // Set initial name for editing
         fetchAudioFeatures(
           response.data.tracks.items.map((item) => item.track.id)
         );
@@ -87,17 +98,62 @@ function PlaylistDetail({ token }) {
     fetchPlaylist();
   }, [id, token]);
 
-  const deletePlaylist = async () => {
+  const openEditModal = () => {
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+  };
+
+  const handleNameChange = (e) => {
+    setNewPlaylistName(e.target.value);
+  };
+
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  const confirmDeletePlaylist = async () => {
     try {
-      await axios.delete(`https://api.spotify.com/v1/playlists/${id}/followers`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      navigate("/playlists"); // Redirect to the Playlists page after deletion
+      await axios.delete(
+        `https://api.spotify.com/v1/playlists/${id}/followers`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      navigate("/playlists");
     } catch (err) {
       console.error("Error deleting playlist:", err);
       alert("Failed to delete playlist. Please try again.");
+    } finally {
+      setShowDeleteModal(false);
+    }
+  };
+
+  const savePlaylistName = async () => {
+    try {
+      await axios.put(
+        `https://api.spotify.com/v1/playlists/${id}`,
+        { name: newPlaylistName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setPlaylist((prev) => ({ ...prev, name: newPlaylistName }));
+      setShowEditModal(false);
+    } catch (err) {
+      console.error("Error updating playlist name:", err);
+      alert("Failed to update playlist name. Please try again.");
     }
   };
 
@@ -178,15 +234,20 @@ function PlaylistDetail({ token }) {
               className="w-60 h-60 mb-4"
             />
           ) : (
-            <div className="w-60 h-60 bg-gray-400 flex items-center justify-center text-gray-700 mb-4">
-              No Image
-            </div>
+            <div className="w-60 h-60 bg-gray-400 flex items-center justify-center text-gray-700 mb-4"></div>
           )}
           <div className="flex items-center mb-1">
-            <h2 className="text-2xl font-bold text-center">
-              {playlist.name}
-            </h2>
-            <button onClick={deletePlaylist} className="text-red-500 hover:text-red-700">
+            <button
+              onClick={openEditModal}
+              className="text-[#1ED760] hover:text-[#ffffff] mr-4"
+            >
+              <FaEdit size={20} />
+            </button>
+            <h2 className="text-2xl font-bold text-center">{playlist.name}</h2>
+            <button
+              onClick={openDeleteModal}
+              className="text-red-500 hover:text-white ml-4"
+            >
               <FaTrashAlt size={20} />
             </button>
           </div>
@@ -200,7 +261,7 @@ function PlaylistDetail({ token }) {
           {/* Get Recommendations Button */}
           <Link
             to={`/playrec/${id}`} // Link to the PlayRec page
-            className="mt-4 inline-block px-4 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
+            className="mt-4 inline-block px-4 py-2 bg-[#1ED760] text-black font-bold rounded-full text-xs"
           >
             Get Recommendations
           </Link>
@@ -212,7 +273,12 @@ function PlaylistDetail({ token }) {
                 Audio Features
               </h3>
               <div className="mr-6 h-[85%]">
-                <Bar className="mr-6" data={data} options={options} height={400} />
+                <Bar
+                  className="mr-6"
+                  data={data}
+                  options={options}
+                  height={400}
+                />
               </div>
             </div>
           )}
@@ -224,6 +290,58 @@ function PlaylistDetail({ token }) {
             ))}
           </ul>
         </div>
+
+        {/* Edit Playlist Name Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#282828] p-6 rounded-lg w-[80%] max-w-md text-white relative">
+              <h2 className="text-lg font-bold mb-4">Edit Playlist Name</h2>
+              <input
+                type="text"
+                value={newPlaylistName}
+                onChange={handleNameChange}
+                className="w-full p-2 rounded-md border border-gray-300 text-white mb-4 bg-[#040306]"
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={closeEditModal}
+                  className="px-4 py-2 bg-[#040306] text-white rounded-full font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={savePlaylistName}
+                  className="px-4 py-2 bg-[#1ED760] text-black rounded-full font-bold"
+                >
+                  Enter
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#282828] p-6 rounded-lg w-[80%] max-w-md text-white relative">
+              <h2 className="text-lg font-bold mb-4">Are you sure?</h2>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 bg-[#040306] text-white rounded-full font-bold"
+                >
+                  No
+                </button>
+                <button
+                  onClick={confirmDeletePlaylist}
+                  className="px-4 py-2 bg-[#1ED760] text-black rounded-full font-bold"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   );

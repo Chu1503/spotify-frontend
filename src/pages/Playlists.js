@@ -65,7 +65,6 @@ function Playlists({ token }) {
                 />
               ) : (
                 <div className="w-48 h-48 bg-gray-400 flex items-center justify-center text-gray-700">
-                  No Image
                 </div>
               )}
               {/* Overlay for darkening effect */}

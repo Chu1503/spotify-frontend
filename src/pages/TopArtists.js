@@ -108,7 +108,6 @@ function TopArtists({ token }) {
                 />
               ) : (
                 <div className="w-36 h-36 rounded-full bg-gray-400 flex items-center justify-center text-gray-700 mb-2">
-                  No Image
                 </div>
               )}
               <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-40 transition-opacity duration-200 rounded-full"></div>
