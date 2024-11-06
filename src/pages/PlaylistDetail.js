@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom"; // Import Link
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import SongItem from "../components/SongItem";
 import ClipLoader from "react-spinners/ClipLoader";
 import { Bar } from "react-chartjs-2";
+import { FaTrashAlt } from "react-icons/fa"; // Import delete icon
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +19,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 function PlaylistDetail({ token }) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [playlist, setPlaylist] = useState(null);
   const [audioFeatures, setAudioFeatures] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,20 @@ function PlaylistDetail({ token }) {
 
     fetchPlaylist();
   }, [id, token]);
+
+  const deletePlaylist = async () => {
+    try {
+      await axios.delete(`https://api.spotify.com/v1/playlists/${id}/followers`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      navigate("/playlists"); // Redirect to the Playlists page after deletion
+    } catch (err) {
+      console.error("Error deleting playlist:", err);
+      alert("Failed to delete playlist. Please try again.");
+    }
+  };
 
   if (loading) {
     return (
@@ -166,9 +182,14 @@ function PlaylistDetail({ token }) {
               No Image
             </div>
           )}
-          <h2 className="text-2xl font-bold text-center mb-1">
-            {playlist.name}
-          </h2>
+          <div className="flex items-center mb-1">
+            <h2 className="text-2xl font-bold text-center">
+              {playlist.name}
+            </h2>
+            <button onClick={deletePlaylist} className="text-red-500 hover:text-red-700">
+              <FaTrashAlt size={20} />
+            </button>
+          </div>
           <p className="text-sm text-[#9b9b9b] text-center mb-3">
             By {playlist.owner.display_name}
           </p>
