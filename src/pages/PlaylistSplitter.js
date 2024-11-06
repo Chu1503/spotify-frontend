@@ -10,10 +10,11 @@ function PlaylistSplitter({ token }) {
   const [splitPlaylists, setSplitPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(null);
   const [customPlaylistName, setCustomPlaylistName] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState({});
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -33,7 +34,7 @@ function PlaylistSplitter({ token }) {
         const tracksWithFeatures = data.items.map((item, index) => ({
           ...item.track,
           features: featuresData.audio_features[index],
-          genre: item.track.artists[0]?.genres?.[0] || "Playlist" // Use artist's genre if available
+          genre: item.track.artists[0]?.genres?.[0] || `Cluster ${index + 1}`,
         }));
 
         if (tracksWithFeatures.length < 10) {
@@ -82,7 +83,19 @@ function PlaylistSplitter({ token }) {
     setSplitPlaylists(filteredPlaylists);
   };
 
-  const saveClusterToSpotify = async (playlistName, tracks) => {
+  const openModal = (index) => {
+    setCurrentPlaylistIndex(index);
+    setCustomPlaylistName(""); // Reset custom name
+    setIsPublic(true); // Reset public state
+    setShowModal(true);
+  };
+
+  const saveClusterToSpotify = async () => {
+    if (!customPlaylistName.trim()) {
+      alert("Please enter a name for the playlist.");
+      return;
+    }
+
     setSaving(true);
     try {
       const userResponse = await axios.get("https://api.spotify.com/v1/me", {
@@ -93,7 +106,7 @@ function PlaylistSplitter({ token }) {
       const newPlaylistResponse = await axios.post(
         `https://api.spotify.com/v1/users/${userId}/playlists`,
         {
-          name: playlistName,
+          name: customPlaylistName,
           public: isPublic,
         },
         {
@@ -105,7 +118,7 @@ function PlaylistSplitter({ token }) {
       );
 
       const newPlaylistId = newPlaylistResponse.data.id;
-      const trackUris = tracks.map((track) => track.uri);
+      const trackUris = splitPlaylists[currentPlaylistIndex].map((track) => track.uri);
 
       await axios.post(
         `https://api.spotify.com/v1/playlists/${newPlaylistId}/tracks`,
@@ -118,8 +131,16 @@ function PlaylistSplitter({ token }) {
         }
       );
 
-      setShowConfirmation(true);
-      setTimeout(() => setShowConfirmation(false), 3000);
+      setShowConfirmation((prev) => ({
+        ...prev,
+        [currentPlaylistIndex]: true,
+      }));
+      setTimeout(() => setShowConfirmation((prev) => ({
+        ...prev,
+        [currentPlaylistIndex]: false,
+      })), 3000);
+
+      setShowModal(false);
     } catch (err) {
       console.error("Error saving playlist to Spotify:", err);
     } finally {
@@ -142,7 +163,7 @@ function PlaylistSplitter({ token }) {
       ) : (
         <>
           {splitPlaylists.map((playlist, index) => {
-            const genreName = playlist[0]?.genre || `Playlist ${index + 1}`;
+            const genreName = playlist[0]?.genre || `Custom Playlist ${index + 1}`;
             return (
               <div key={index} className="mb-6">
                 <div className="flex flex-row justify-between mb-6 items-center">
@@ -150,33 +171,28 @@ function PlaylistSplitter({ token }) {
                     {genreName}
                   </h3>
                   <button
-                    onClick={() =>
-                      saveClusterToSpotify(
-                        `${customPlaylistName} - ${genreName}`,
-                        playlist
-                      )
-                    }
+                    onClick={() => openModal(index)}
                     disabled={saving}
                     className="px-4 py-2 bg-[#1ED760] text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300"
                   >
-                    {saving ? "Saving..." : "Save to Spotify"}
+                    Save to Spotify
                   </button>
                 </div>
+                {showConfirmation[index] && (
+                  <div className="text-center bg-[#1ED760] text-[#040306] p-2 rounded mt-4">
+                    Playlist saved to your Spotify account!
+                  </div>
+                )}
                 <ul>
                   {playlist.map((track, idx) => (
                     <SongItem key={track.id} track={track} index={idx} />
                   ))}
                 </ul>
+                
               </div>
             );
           })}
         </>
-      )}
-
-      {showConfirmation && (
-        <div className="text-center bg-[#1ED760] text-[#040306] p-2 rounded mb-4">
-          Playlists saved to your Spotify account!
-        </div>
       )}
 
       {showModal && (
@@ -188,12 +204,10 @@ function PlaylistSplitter({ token }) {
             >
               ×
             </button>
-            <h2 className="text-xl font-bold mb-4">
-              Save Playlists to Spotify
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Save Playlist to Spotify</h2>
             <input
               type="text"
-              placeholder="Enter Playlist Name Prefix"
+              placeholder="Enter Playlist Name"
               value={customPlaylistName}
               onChange={(e) => setCustomPlaylistName(e.target.value)}
               className="w-full p-2 rounded-md border border-gray-300 text-white mb-4 bg-[#040306]"
@@ -202,9 +216,7 @@ function PlaylistSplitter({ token }) {
               <button
                 onClick={() => setIsPublic(true)}
                 className={`px-4 py-2 rounded-md font-bold transition-colors ${
-                  isPublic
-                    ? "bg-[#1ED760] text-white"
-                    : "bg-[#040306] text-white"
+                  isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
                 }`}
               >
                 Public
@@ -212,14 +224,19 @@ function PlaylistSplitter({ token }) {
               <button
                 onClick={() => setIsPublic(false)}
                 className={`px-4 py-2 rounded-md font-bold transition-colors ${
-                  !isPublic
-                    ? "bg-[#1ED760] text-white"
-                    : "bg-[#040306] text-white"
+                  !isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
                 }`}
               >
                 Private
               </button>
             </div>
+            <button
+              onClick={saveClusterToSpotify}
+              disabled={saving}
+              className="px-4 py-2 bg-[#1ED760] text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300 w-full"
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
           </div>
         </div>
       )}
