@@ -5,6 +5,7 @@ import PlaylistModal from "../components/PlaylistModal";
 
 function Recommendations({ token }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfirmAction, setModalConfirmAction] = useState(null); // Define modalConfirmAction
   const [songQuery, setSongQuery] = useState("");
   const [songResults, setSongResults] = useState([]);
   const [artistQuery, setArtistQuery] = useState("");
@@ -13,9 +14,16 @@ function Recommendations({ token }) {
   const songContainerRef = useRef(null);
   const artistContainerRef = useRef(null);
 
-  const handlePlaylistSelect = (playlistId) => {
+  // Handle playlist selection for PlayRec page
+  const handlePlaylistSelectForPlayRec = (playlistId) => {
     setModalOpen(false);
     navigate(`/playrec/${playlistId}`);
+  };
+
+  // Handle playlist selection for PlaylistSplitter page
+  const handlePlaylistSelectForSplitter = (playlistId) => {
+    setModalOpen(false);
+    navigate(`/playlist-splitter/${playlistId}`);
   };
 
   const handleTrackSelect = (track) => {
@@ -64,7 +72,7 @@ function Recommendations({ token }) {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             q: artistQuery,
-            type: "artist", // Ensures only artists are returned
+            type: "artist",
             limit: 5,
           },
         });
@@ -104,13 +112,30 @@ function Recommendations({ token }) {
 
       <div className="flex flex-col items-center justify-center">
         <h2 className="text-xl font-bold mb-4 text-white">Based on Playlist</h2>
+
+        {/* Button to Choose Playlist for PlayRec */}
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setModalOpen(true);
+            setModalConfirmAction(() => handlePlaylistSelectForPlayRec); // Set action for PlayRec
+          }}
           className="px-6 py-3 bg-[#1ED760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300"
         >
           Choose Playlist
         </button>
 
+        {/* Button to Split Playlist by Genre */}
+        <button
+          onClick={() => {
+            setModalOpen(true);
+            setModalConfirmAction(() => handlePlaylistSelectForSplitter); // Set action for PlaylistSplitter
+          }}
+          className="px-6 py-3 bg-[#1ED760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300 mt-4"
+        >
+          Split Playlist by Genre
+        </button>
+
+        {/* Rest of the component logic for song and artist search */}
         <div className="w-full max-w-4xl flex flex-row justify-between space-x-4 mt-6">
           {/* Search Bar for Songs */}
           <div
@@ -127,7 +152,6 @@ function Recommendations({ token }) {
               onChange={(e) => setSongQuery(e.target.value)}
               className="w-full p-2 rounded-md border border-gray-300 text-white mb-2 bg-[#040306]"
             />
-
             {/* Display song search results */}
             {songResults.length > 0 && (
               <ul className="bg-[#282828] rounded-md p-2 max-h-100 overflow-y-auto no-scrollbar w-full">
@@ -169,7 +193,6 @@ function Recommendations({ token }) {
               onChange={(e) => setArtistQuery(e.target.value)}
               className="w-full p-2 rounded-md border border-gray-300 text-white mb-2 bg-[#040306]"
             />
-
             {/* Display artist search results */}
             {artistResults.length > 0 && (
               <ul className="bg-[#282828] rounded-md p-2 max-h-100 overflow-y-auto no-scrollbar w-full">
@@ -197,11 +220,11 @@ function Recommendations({ token }) {
           </div>
         </div>
 
-        {/* Playlist Modal */}
+        {/* Display Playlist Modal if Open */}
         {modalOpen && (
           <PlaylistModal
             token={token}
-            onSelect={handlePlaylistSelect}
+            onSelect={(playlistId) => modalConfirmAction(playlistId)} // Call the selected action
             onClose={() => setModalOpen(false)}
           />
         )}
