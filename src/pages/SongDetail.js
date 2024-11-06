@@ -215,7 +215,7 @@ const SongDetail = ({ token }) => {
           <Link
             to={`/songrec/${songId}`}
             state={{ trackName: song.name }} // Pass the song name in state
-            className="inline-block mt-4 px-4 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
+            className="inline-block mt-4 px-4 py-2 bg-[#1ED760] text-black font-bold rounded-full text-xs"
           >
             Get Recommendations
           </Link>

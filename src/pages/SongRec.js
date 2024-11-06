@@ -134,7 +134,7 @@ function SongRec({ token }) {
         <button
           onClick={openModal}
           disabled={saving}
-          className={`px-4 py-2 bg-[#1ED760] text-xs mr-24 text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300 ${
+          className={`px-4 py-2 bg-[#1ED760] text-xs mr-24 text-black rounded-full font-bold hover:bg-[#1db954] transition duration-300 ${
             saving ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -174,7 +174,7 @@ function SongRec({ token }) {
               <button
                 onClick={() => setIsPublic(true)}
                 className={`px-4 py-2 rounded-md font-bold transition-colors ${
-                  isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
+                  isPublic ? "bg-[#1ED760] text-black" : "bg-[#040306] text-white"
                 }`}
               >
                 Public
@@ -182,7 +182,7 @@ function SongRec({ token }) {
               <button
                 onClick={() => setIsPublic(false)}
                 className={`px-4 py-2 rounded-md font-bold transition-colors ${
-                  !isPublic ? "bg-[#1ED760] text-white" : "bg-[#040306] text-white"
+                  !isPublic ? "bg-[#1ED760] text-black" : "bg-[#040306] text-white"
                 }`}
               >
                 Private
@@ -191,7 +191,7 @@ function SongRec({ token }) {
             <button
               onClick={saveToSpotify}
               disabled={saving}
-              className="px-4 py-2 bg-[#1ED760] text-white rounded-full font-bold hover:bg-[#1db954] transition duration-300 w-full"
+              className="px-4 py-2 bg-[#1ED760] text-black rounded-full font-bold hover:bg-[#1db954] transition duration-300 w-full"
             >
               {saving ? "Saving..." : "Save"}
             </button>

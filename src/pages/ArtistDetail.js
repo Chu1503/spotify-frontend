@@ -98,7 +98,7 @@ function ArtistDetail({ token }) {
             <Link
               to={`/artrec/${id}`}
               state={{ artistName: artist.name }} // Pass the artist name in state
-              className="mt-4 inline-block px-4 py-2 bg-[#1ED760] text-white font-bold rounded-full text-xs"
+              className="mt-4 inline-block px-4 py-2 bg-[#1ED760] text-black font-bold rounded-full text-xs"
             >
               Get Recommendations
             </Link>
