@@ -141,7 +141,7 @@ function App() {
     <Router>
       <div className="flex min-h-screen bg-[#181818]">
         <Sidebar user={user} handleLogout={handleLogout} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 md:p-6 p-4 overflow-auto">
           <Routes>
             <Route path="/" element={<Navigate to="/profile" replace />} />
             <Route

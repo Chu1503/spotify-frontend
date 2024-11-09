@@ -75,7 +75,7 @@ function TopArtists({ token }) {
   return (
     <div className="md:pl-48 md:pr-48 md:ml-24 md:pt-6 pl-1 pr-1 ml-0 pt-1">
       <div className="flex md:flex-row flex-col items-center justify-between">
-        <h2 className="md:text-2xl text-lg font-bold text-white">
+        <h2 className="md:text-2xl text-lg font-bold mb-6 text-white">
           Top Artists
         </h2>
         <div className="flex space-x-4 mb-4 text-white md:text-sm text-xs">
