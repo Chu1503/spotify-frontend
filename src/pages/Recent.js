@@ -55,8 +55,8 @@ function Recent({ token }) {
   }
 
   return (
-    <div className="pl-48 pr-48 ml-24 pt-6">
-      <h2 className="text-2xl font-bold mb-6 text-white">
+    <div className="md:pl-48 md:pr-48 md:ml-24 md:pt-6 pl-1 pr-1 ml-0 pt-1 items-center">
+        <h2 className="md:text-2xl text-lg font-bold mb-6 text-white md:text-left text-center">
         Recently Played Tracks
       </h2>
       <ul>

@@ -73,17 +73,19 @@ function TopArtists({ token }) {
   }
 
   return (
-    <div className="pl-48 pr-48 ml-24 pt-6">
-      <div className="flex flex-row justify-between">
-        <h2 className="text-2xl font-bold mb-6 text-white">Top Artists</h2>
-        <div className="flex space-x-4 mb-4 text-white text-sm">
+    <div className="md:pl-48 md:pr-48 md:ml-24 md:pt-6 pl-1 pr-1 ml-0 pt-1">
+      <div className="flex md:flex-row flex-col items-center justify-between">
+        <h2 className="md:text-2xl text-lg font-bold text-white">
+          Top Artists
+        </h2>
+        <div className="flex space-x-4 mb-4 text-white md:text-sm text-xs">
           {Object.keys(timeRangeOptions).map((label) => (
             <button
               key={label}
               onClick={() => setTimeRange(timeRangeOptions[label])}
               className={`${
                 timeRange === timeRangeOptions[label]
-                  ? "underline font-bold text-sm"
+                  ? "underline font-bold md:text-sm text-xs"
                   : "text-[#9b9b9b]"
               }`}
             >
@@ -92,7 +94,7 @@ function TopArtists({ token }) {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
         {topArtists.map((artist) => (
           <Link
             to={`/artist/${artist.id}`}
@@ -104,18 +106,17 @@ function TopArtists({ token }) {
                 <img
                   src={artist.images[0].url}
                   alt={artist.name}
-                  className="w-36 h-36 rounded-full object-cover mb-2 mt-2"
+                  className="md:w-36 md:h-36 w-18 h-18 rounded-full object-cover aspect-square mb-2 mt-2"
                 />
               ) : (
-                <div className="w-36 h-36 rounded-full bg-gray-400 flex items-center justify-center text-gray-700 mb-2">
-                </div>
+                <div className="md:w-36 md:h-36 w-18 h-18 rounded-full bg-gray-400 flex items-center justify-center text-gray-700 mb-2"></div>
               )}
               <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-40 transition-opacity duration-200 rounded-full"></div>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <FaInfoCircle className="text-white text-xl" />
               </div>
             </div>
-            <h3 className="text-sm font-semibold text-white mt-2">
+            <h3 className="md:text-sm text-xs font-semibold text-white mt-2">
               {artist.name}
             </h3>
           </Link>

@@ -46,22 +46,22 @@ function Playlists({ token }) {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="pl-48 pr-48 ml-24 pt-6">
-      <h2 className="text-2xl font-bold mb-6 text-white">
+    <div className="md:pl-48 md:pr-48 md:ml-24 md:pt-6 pl-1 pr-1 ml-0 pt-1">
+        <h2 className="md:text-2xl text-lg font-bold mb-6 text-white md:text-left text-center">
         Your Playlists
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+      <div className="grid grid-cols-2 md:grid-cols-5 md:gap-10 gap-8">
         {playlists.map((playlist) => (
-          <div key={playlist.id} className="w-48">
+          <div key={playlist.id} className="md:w-48 w-30">
             <div
-              className="relative w-48 h-48 cursor-pointer"
+              className="relative md:w-48 md:h-48 w-30 h-30 cursor-pointer"
               onClick={() => navigate(`/playlist/${playlist.id}`)}
             >
               {playlist.images && playlist.images.length > 0 ? (
                 <img
                   src={playlist.images[0].url}
                   alt={playlist.name}
-                  className="w-48 h-48 object-cover transition-opacity duration-200 ease-in-out hover:opacity-75"
+                  className="md:w-48 md:h-48 w-30 h-30 object-cover transition-opacity duration-200 ease-in-out hover:opacity-75"
                 />
               ) : (
                 <div className="w-48 h-48 bg-gray-400 flex items-center justify-center text-gray-700">
@@ -72,12 +72,12 @@ function Playlists({ token }) {
             </div>
             <div className="flex flex-col items-center justify-center p-2">
               <h3
-                className="text-md font-semibold text-white text-center hover:underline cursor-pointer"
+                className="md:text-md text-xs font-semibold text-white text-center hover:underline cursor-pointer"
                 onClick={() => navigate(`/playlist/${playlist.id}`)}
               >
                 {playlist.name}
               </h3>
-              <p className="text-xs text-[#9b9b9b] text-center">
+              <p className="md:text-xs text-[12px] text-[#9b9b9b] text-center">
                 {playlist.tracks.total} TRACKS
               </p>
             </div>
