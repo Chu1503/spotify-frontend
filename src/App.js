@@ -42,8 +42,8 @@ function App() {
     }
     try {
       const response = await fetch(
-        `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
-        // `http://localhost:5000/refresh_token?refresh_token=${refreshToken}`
+        // `https://spotify-backend-omega.vercel.app/refresh_token?refresh_token=${refreshToken}`
+        `http://localhost:5000/refresh_token?refresh_token=${refreshToken}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -127,8 +127,8 @@ function App() {
     return (
       <div className="min-h-screen bg-[#181818] flex items-center justify-center p-4">
         <a
-          // href="https://spotify-backend-omega.vercel.app/login"
-          href="http://localhost:5000/login"
+          href="https://spotify-backend-omega.vercel.app/login"
+          // href="http://localhost:5000/login"
           className="px-6 py-3 bg-[#1ed760] rounded-full font-bold hover:bg-[#1ED760] transition duration-300"
         >
           LOGIN WITH SPOTIFY
@@ -140,7 +140,11 @@ function App() {
   return (
     <Router>
       <div className="flex min-h-screen bg-[#181818]">
-        <Sidebar user={user} handleLogout={handleLogout} />
+        <Sidebar
+          user={user}
+          handleLogout={handleLogout}
+          className="relative z-50"
+        />
         <main className="flex-1 md:p-6 p-4 overflow-auto">
           <Routes>
             <Route path="/" element={<Navigate to="/profile" replace />} />
