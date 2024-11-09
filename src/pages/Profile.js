@@ -12,14 +12,14 @@ function Profile({ user, playlistsCount }) {
   }
 
   return (
-    <div className="text-white p-6 ml-24">
+    <div className="text-white p-6 md:ml-24 ml-0">
       <div className="flex flex-col items-center">
         {/* Profile Image */}
         {user.images && user.images.length > 0 ? (
           <img
             src={user.images[0].url}
             alt="Profile"
-            className="w-24 h-24 rounded-full mb-4"
+            className="w-24 h-24 md:w-24 md:h-24 rounded-full mb-4"
           />
         ) : (
           <div className="w-24 h-24 rounded-full bg-gray-300 mb-4 flex items-center justify-center text-gray-700">
@@ -27,7 +27,7 @@ function Profile({ user, playlistsCount }) {
         )}
 
         {/* Welcome Message */}
-        <h1 className="text-2xl font-bold mb-2">
+        <h1 className="md:text-2xl text-xl font-bold mb-2">
           Welcome, <span className="text-[#1ED760]">{user.display_name}</span>!
         </h1>
 
